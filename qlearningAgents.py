@@ -127,11 +127,14 @@ class QLearningAgent(ReinforcementAgent):
         action = None
         "*** YOUR CODE HERE ***"
         #util.raiseNotDefined()
+        #Si no hay acciones posibles, devuelve nada:
         if not legalActions:
           return action
         
+        #Exploración:
         if util.flipCoin(self.epsilon):
-            return choice(legalActions)
+            return random.choice(legalActions)
+        #Explotación
         else:
             return self.computeActionFromQValues(state)
 
@@ -209,17 +212,24 @@ class ApproximateQAgent(PacmanQAgent):
           Should return Q(state,action) = w * featureVector
           where * is the dotProduct operator
         """
+        pesos = self.getWeights()
         features = self.featExtractor.getFeatures(state, action)
-        return self.weights * features
+        q_valor=0
+
+        for i in pesos:
+            q_valor = q_valor + (pesos[i]* features[i]) 
+
+        return q_valor
 
     def update(self, state, action, nextState, reward):
         """
            Should update your weights based on transition
         """
-        features = self.featExtractor.getFeatures(state, action)
-        difference = (reward + self.discount * self.getValue(nextState)) - self.getQValue(state, action)
+        pesos = self.getWeights()
+        features = self.featExtractor.getFeatures(state,action)
+        difference = (reward + (self.discount * self.computeValueFromQValues(nextState))) - self.getQValue(state, action)
         for feature in features:
-            self.weights[feature] += self.alpha * difference * features[feature]
+            pesos[feature] = pesos[feature]+ (self.alpha * difference * features[feature])
 
 
 
@@ -232,4 +242,4 @@ class ApproximateQAgent(PacmanQAgent):
         if self.episodesSoFar == self.numTraining:
             # you might want to print your weights here for debugging
             print("Final weights:", self.weights)
-            #pass
+            pass
